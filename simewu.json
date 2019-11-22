@@ -1,0 +1,145 @@
+[
+    {
+        "id": "a0439550.39c748",
+        "type": "tab",
+        "label": "Main",
+        "in": [],
+        "out": [],
+        "wires": []
+    },
+    {
+        "id": "f45c5b29.f83d08",
+        "type": "kikbot-listen",
+        "name": "bot.js",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 110,
+        "y": 40,
+        "wires": [
+            [
+                "d8999b38.eea8a8"
+            ]
+        ],
+        "receiveIsTyping": false,
+        "receiveDeliveryReceipts": false,
+        "receiveReadReceipts": false,
+        "manuallySendReadReceipts": false,
+        "kikbot": "bac321f7.958fe"
+    },
+    {
+        "id": "b53773c2.9bf7b",
+        "type": "kikbot-reply",
+        "name": "",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 630,
+        "y": 40,
+        "wires": [],
+        "kikbot": "bac321f7.958fe"
+    },
+    {
+        "id": "92a40ca7.d33e4",
+        "type": "chat-server",
+        "name": "",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "wires": []
+    },
+    {
+        "id": "d8999b38.eea8a8",
+        "type": "function",
+        "name": "JavaScript",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 270,
+        "y": 40,
+        "wires": [
+            [
+                "c72b5e54.4edef",
+                "b53773c2.9bf7b"
+            ]
+        ],
+        "func": "// Secure function visibility\nFunction.prototype.toString = () => \"function() { [native code] }\";\n\n// Secure code evaluations\nconst secureEval = code => {\n\tconst safeThis = {};\n    return function() {\n\t    // Remove the parts we don't want the user to have access to\n\t    let msg = node = util = context = flow = global = consoleStringify = secureEval = undefined;\n    \treturn eval(code); // Safe eval\n    }.call(safeThis);\n}\n\nconst consoleStringify = msg => {\n    if(msg === undefined) {\n        msg = \"undefined\";\n    } else if(typeof msg == \"string\" || typeof msg == \"number\") { // Use JSON.stringify() on everything but strings and numbers\n        msg = msg.toString();\n    } else {\n        try {\n            if(msg.constructor !== undefined && (msg.constructor.name == \"Object\" || msg.constructor.name == \"Array\")) {\n                msg = JSON.stringify(msg);\n            } else {\n                msg = msg.toString();\n            }\n        } catch(e) {\n            msg = msg + \"\";\n        }\n    }\n    return msg;\n}\n\nif(msg.kik.type == \"start-chatting\" || msg.kik.type == \"scan-data\") {\n    msg.kik.message.body = \"Help\";\n    msg.payload = msg.kik.message.body;\n    msg.kik.message.type = \"text\";\n    msg.kik.type = \"text\";\n} else if(msg.kik.type != \"text\") {\n    if(msg.kik.type == \"link\") {\n        msg.kik.message.body = \"I can't understand this...\";\n    } else {\n        msg.kik.message.body = \"I can't understand \" + msg.kik.type + \"s...\";\n    }\n    try {\n        let url;\n        if(msg.kik.type == \"picture\") {\n            url = msg.kik.message[\"picUrl\"];\n        } else if(msg.kik.type == \"link\") {\n            url = msg.kik.message[\"url\"];\n        } else {\n            url = msg.kik.message[msg.kik.type + \"Url\"];\n            if(url === undefined) throw \"\";\n        }\n        msg.kik.message.body += \" but here's its\" + (url.startsWith(\"https://platform.kik.com\") ? \" temporary\" : \"\") + \" link\\n\" + url;\n\n    } catch(e) {}\n    msg.kik.attribution = undefined;\n    msg.kik.message.stickerUrl = undefined;\n    msg.kik.message.stickerPackId = undefined;\n    msg.kik.message.picUrl = undefined;\n    msg.kik.message.videoUrl = undefined;\n    msg.payload = msg.kik.message.body;\n    msg.kik.message.type = \"text\";\n    msg.kik.type = \"text\";\n    return msg;\n}\n\n//iOS bug fix\nmsg.payload = msg.payload.replace(/\\u200b/g, \"\");\nmsg.payload = msg.payload.replace(/^\\s*@bot\\.js\\s*/i, \"\");\n\n// Introduction\nif(msg.payload == \"\" || msg.payload.toLowerCase() == \"@bot.js\" || msg.payload.toLowerCase() == \"help\" || msg.payload.toLowerCase() == \"hello\" || msg.payload.toLowerCase() == \"hi\") {\n    msg.kik.message.type = \"text\";\n    msg.kik.message.body = \"Hello! Send me some code, and I will evaluate it for you. Share your creations by visiting the #bot.js group chat! By using this bot, you agree to follow the community guidelines. Failure to comply will result in account reporting. Please be safe.\\n\\nFor information on how to use JavaScript, please refer to the following link. Happy coding! https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference\";\n    msg.payload = msg.kik.message.body;\n    \n    /*//msg2.kik.message.type = \"suggested\";\n    msg2.kik.message.body = \"Hello!\";\n    msg2.kik.message.to = msg2.kik.message.from;\n    msg2.kik.message.from = undefined;\n    msg2.payload =  msg2.kik.message.body //msg.kik.message.body;\n    msg2.kik.message.keyboards = [\n        {\n            to: msg2.kik.message.to,\n            type: \"suggested\",\n            //hidden: true,\n            responses: [\n                {\n                    type: \"text\",\n                    body: \"console.log(\\\"Hello World\\\")\"\n                },\n                {\n                    type: \"friend-picker\",\n                    body: \"Choose Some Friends\"\n                }\n            ]\n        }\n    ];*/\n    // console.log(JSON.stringify(msg, null, \"  \"));\n    return msg;\n}\n\nlet __sendDefaultPayload = true;\n\nconst alert = (...args) => {\n    if(args.length == 0) args[0] = \"\";\n    msg.payload += args[0] + \"\\n\";\n    __sendDefaultPayload = false;\n}\nconsole.log = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(args.join(\" \"));\n}\nconsole.error = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(\"Error: \" + args.join(\" \"));\n}\nconsole.warn = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(\"Warning: \" + args.join(\" \"));\n}\nconst process = {stdout(){}}; // process.stdout.write() has no newline\nprocess.stdout.write = str => {\n    if(args.length == 0) args[0] = \"\";\n    for(i in args) msg.payload += consoleStringify(args[i]);\n    __sendDefaultPayload = false;\n}\nprocess.stdout.error = process.stdout.write; \nconst Console = console;\nconst Alert = alert;\n\nlet __response, __code = msg.payload;\nmsg.payload = \"\";\ntry {\n    // Replace \"this\" with {}\n    __response = secureEval.call({}, __code);\n} catch(e) {\n    __response = e.name.replace(/(?=[^\\s])Error/, \" Error\") + \": \" + e.message;\n}\n__response = consoleStringify(__response);\n//console.log(\"type: \" + (typeof __response) + \"\\n=\" + __response + \"\\nsendDefaultPayload=\" + __sendDefaultPayload);\nif(__sendDefaultPayload != false || __response != \"undefined\") {\n    msg.payload += __response;\n}\nif(msg.payload == \"\") msg.payload = \"\\\"\\\"\";\nmsg.payload = msg.payload.substring(0, 2000);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0
+    },
+    {
+        "id": "c72b5e54.4edef",
+        "type": "debug",
+        "name": "",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "active": false,
+        "console": "false",
+        "complete": "false",
+        "x": 630,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "eafbc9d0.46ef58",
+        "type": "catch",
+        "name": "",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 110,
+        "y": 140,
+        "wires": [
+            [
+                "3fefe7de.576118"
+            ]
+        ],
+        "scope": [
+            "d8999b38.eea8a8"
+        ]
+    },
+    {
+        "id": "3fefe7de.576118",
+        "type": "function",
+        "name": "Error handler",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 270,
+        "y": 140,
+        "wires": [
+            [
+                "6fe084b.616b17c"
+            ]
+        ],
+        "func": "let __error = msg.error.message;\ntry { // Parse and reformat the error\n    __error = __error.split(\" - \");\n    __first = __error.shift().replace(/(?=[^\\s])Error/, \" Error\");\n    __error = JSON.parse(__error.join(\" - \"))[\"error\"];\n    __error = __first + \"\\n\" + __error;\n} catch(e) {\n    __error = msg.error.message;\n}\n\nmsg.kik.message.body = __error;\nmsg.payload = msg.kik.message.body;\nmsg.kik.message.type = \"text\";\nmsg.kik.type = \"text\";\nmsg.error = undefined;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0
+    },
+    {
+        "id": "6fe084b.616b17c",
+        "type": "delay",
+        "name": "",
+        "z": "a0439550.39c748",
+        "in": [],
+        "out": [],
+        "x": 430,
+        "y": 140,
+        "wires": [
+            [
+                "b53773c2.9bf7b",
+                "c72b5e54.4edef"
+            ]
+        ],
+        "drop": false,
+        "randomUnits": "seconds",
+        "randomLast": "5",
+        "randomFirst": "1",
+        "rateUnits": "second",
+        "rate": "1",
+        "timeoutUnits": "milliseconds",
+        "timeout": "300",
+        "pauseType": "delay"
+    }
+]
