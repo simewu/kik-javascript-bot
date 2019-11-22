@@ -42,6 +42,6 @@ GCD(18, 24); // Outputs 6
 ```
 
 The json files are made to operate within ChatFlow ([here](https://nlu.kitt.ai/)), all Kik messages are relayed to this service, sanitized and processed within ChatFlow via Node.js, and the result is returned. Special precautions are taken to ensure no code can escape the sandboxed environment, access to Kik messaging functionality, and other exploitable features have been removed prior to processing.
-
+#
 - [Privacy Policy](https://pastebin.com/DJBiP2vB)
 - [Terms of Service](https://pastebin.com/AenjpF6i)
