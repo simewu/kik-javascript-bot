@@ -7,7 +7,7 @@ As one of the most popular messaging apps in the world, Kik powers a wide variet
   - Collaborate with others to create, optimize, and execute algorithms in real-time.
 
 # Usage
-- On a smart device, install Kik from the Google Play Store ([here](https://play.google.com/store/apps/details?id=kik.android)), the Apple App Store ([here](https://apps.apple.com/us/app/kik/id357218860)), or any other app store.
+- On a smart device, install Kik from the Google Play Store ([here](https://play.google.com/store/apps/details?id=kik.android)), the Apple App Store ([here](https://apps.apple.com/us/app/kik/id357218860)), or any other app store. If you are having trouble installing Kik, please visit [this link](https://kik.co/d/labEvRRnO1).
 - Use the tag @bot.js to find the JavaScript Console bot page.
 - Select "START CHATTING".
 - Enter JavaScript code to get the result.
