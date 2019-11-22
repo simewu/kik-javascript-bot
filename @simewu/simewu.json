@@ -1,135 +1,572 @@
 [
     {
-        "id": "a0439550.39c748",
+        "id": "f2a2c7c7.9dff08",
         "type": "tab",
-        "label": "Main",
+        "label": "Flow 1",
         "in": [],
         "out": [],
         "wires": []
     },
     {
-        "id": "f45c5b29.f83d08",
-        "type": "kikbot-listen",
-        "name": "bot.js",
-        "z": "a0439550.39c748",
+        "id": "30288f8.6e97a7",
+        "type": "chat-server",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
         "in": [],
         "out": [],
-        "x": 110,
-        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "ef32e876.7f8928",
+        "type": "kikbot-listen",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 115.390625,
+        "y": 90,
         "wires": [
             [
-                "d8999b38.eea8a8"
+                "fbd3f295.11f1a"
             ]
         ],
         "receiveIsTyping": false,
         "receiveDeliveryReceipts": false,
         "receiveReadReceipts": false,
         "manuallySendReadReceipts": false,
-        "kikbot": "bac321f7.958fe"
+        "kikbot": "52a302a2.22858c"
     },
     {
-        "id": "b53773c2.9bf7b",
+        "id": "ed2b7faa.5093",
         "type": "kikbot-reply",
         "name": "",
-        "z": "a0439550.39c748",
+        "z": "f2a2c7c7.9dff08",
         "in": [],
         "out": [],
-        "x": 630,
-        "y": 40,
+        "x": 662.390625,
+        "y": 92,
         "wires": [],
-        "kikbot": "bac321f7.958fe"
+        "kikbot": "52a302a2.22858c"
     },
     {
-        "id": "92a40ca7.d33e4",
-        "type": "chat-server",
+        "id": "fbd3f295.11f1a",
+        "type": "router",
         "name": "",
-        "z": "a0439550.39c748",
+        "z": "f2a2c7c7.9dff08",
         "in": [],
         "out": [],
-        "wires": []
-    },
-    {
-        "id": "d8999b38.eea8a8",
-        "type": "function",
-        "name": "JavaScript",
-        "z": "a0439550.39c748",
-        "in": [],
-        "out": [],
-        "x": 270,
-        "y": 40,
+        "x": 381.890625,
+        "y": 65,
         "wires": [
             [
-                "c72b5e54.4edef",
-                "b53773c2.9bf7b"
+                "ed2b7faa.5093",
+                "c10694c3.df20a8"
             ]
         ],
-        "func": "// Secure function visibility\nFunction.prototype.toString = () => \"function() { [native code] }\";\n\n// Secure code evaluations\nconst secureEval = code => {\n\tconst safeThis = {};\n    return function() {\n\t    // Remove the parts we don't want the user to have access to\n\t    let msg = node = util = context = flow = global = consoleStringify = secureEval = undefined;\n    \treturn eval(code); // Safe eval\n    }.call(safeThis);\n}\n\nconst consoleStringify = msg => {\n    if(msg === undefined) {\n        msg = \"undefined\";\n    } else if(typeof msg == \"string\" || typeof msg == \"number\") { // Use JSON.stringify() on everything but strings and numbers\n        msg = msg.toString();\n    } else {\n        try {\n            if(msg.constructor !== undefined && (msg.constructor.name == \"Object\" || msg.constructor.name == \"Array\")) {\n                msg = JSON.stringify(msg);\n            } else {\n                msg = msg.toString();\n            }\n        } catch(e) {\n            msg = msg + \"\";\n        }\n    }\n    return msg;\n}\n\nif(msg.kik.type == \"start-chatting\" || msg.kik.type == \"scan-data\") {\n    msg.kik.message.body = \"Help\";\n    msg.payload = msg.kik.message.body;\n    msg.kik.message.type = \"text\";\n    msg.kik.type = \"text\";\n} else if(msg.kik.type != \"text\") {\n    if(msg.kik.type == \"link\") {\n        msg.kik.message.body = \"I can't understand this...\";\n    } else {\n        msg.kik.message.body = \"I can't understand \" + msg.kik.type + \"s...\";\n    }\n    try {\n        let url;\n        if(msg.kik.type == \"picture\") {\n            url = msg.kik.message[\"picUrl\"];\n        } else if(msg.kik.type == \"link\") {\n            url = msg.kik.message[\"url\"];\n        } else {\n            url = msg.kik.message[msg.kik.type + \"Url\"];\n            if(url === undefined) throw \"\";\n        }\n        msg.kik.message.body += \" but here's its\" + (url.startsWith(\"https://platform.kik.com\") ? \" temporary\" : \"\") + \" link\\n\" + url;\n\n    } catch(e) {}\n    msg.kik.attribution = undefined;\n    msg.kik.message.stickerUrl = undefined;\n    msg.kik.message.stickerPackId = undefined;\n    msg.kik.message.picUrl = undefined;\n    msg.kik.message.videoUrl = undefined;\n    msg.payload = msg.kik.message.body;\n    msg.kik.message.type = \"text\";\n    msg.kik.type = \"text\";\n    return msg;\n}\n\n//iOS bug fix\nmsg.payload = msg.payload.replace(/\\u200b/g, \"\");\nmsg.payload = msg.payload.replace(/^\\s*@bot\\.js\\s*/i, \"\");\n\n// Introduction\nif(msg.payload == \"\" || msg.payload.toLowerCase() == \"@bot.js\" || msg.payload.toLowerCase() == \"help\" || msg.payload.toLowerCase() == \"hello\" || msg.payload.toLowerCase() == \"hi\") {\n    msg.kik.message.type = \"text\";\n    msg.kik.message.body = \"Hello! Send me some code, and I will evaluate it for you. Share your creations by visiting the #bot.js group chat! By using this bot, you agree to follow the community guidelines. Failure to comply will result in account reporting. Please be safe.\\n\\nFor information on how to use JavaScript, please refer to the following link. Happy coding! https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference\";\n    msg.payload = msg.kik.message.body;\n    \n    /*//msg2.kik.message.type = \"suggested\";\n    msg2.kik.message.body = \"Hello!\";\n    msg2.kik.message.to = msg2.kik.message.from;\n    msg2.kik.message.from = undefined;\n    msg2.payload =  msg2.kik.message.body //msg.kik.message.body;\n    msg2.kik.message.keyboards = [\n        {\n            to: msg2.kik.message.to,\n            type: \"suggested\",\n            //hidden: true,\n            responses: [\n                {\n                    type: \"text\",\n                    body: \"console.log(\\\"Hello World\\\")\"\n                },\n                {\n                    type: \"friend-picker\",\n                    body: \"Choose Some Friends\"\n                }\n            ]\n        }\n    ];*/\n    // console.log(JSON.stringify(msg, null, \"  \"));\n    return msg;\n}\n\nlet __sendDefaultPayload = true;\n\nconst alert = (...args) => {\n    if(args.length == 0) args[0] = \"\";\n    msg.payload += args[0] + \"\\n\";\n    __sendDefaultPayload = false;\n}\nconsole.log = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(args.join(\" \"));\n}\nconsole.error = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(\"Error: \" + args.join(\" \"));\n}\nconsole.warn = (...args) => {\n    if(args.length == 0) args[0] = undefined;\n    for(i in args) args[i] = consoleStringify(args[i]);\n    alert(\"Warning: \" + args.join(\" \"));\n}\nconst process = {stdout(){}}; // process.stdout.write() has no newline\nprocess.stdout.write = str => {\n    if(args.length == 0) args[0] = \"\";\n    for(i in args) msg.payload += consoleStringify(args[i]);\n    __sendDefaultPayload = false;\n}\nprocess.stdout.error = process.stdout.write; \nconst Console = console;\nconst Alert = alert;\n\nlet __response, __code = msg.payload;\nmsg.payload = \"\";\ntry {\n    // Replace \"this\" with {}\n    __response = secureEval.call({}, __code);\n} catch(e) {\n    __response = e.name.replace(/(?=[^\\s])Error/, \" Error\") + \": \" + e.message;\n}\n__response = consoleStringify(__response);\n//console.log(\"type: \" + (typeof __response) + \"\\n=\" + __response + \"\\nsendDefaultPayload=\" + __sendDefaultPayload);\nif(__sendDefaultPayload != false || __response != \"undefined\") {\n    msg.payload += __response;\n}\nif(msg.payload == \"\") msg.payload = \"\\\"\\\"\";\nmsg.payload = msg.payload.substring(0, 2000);\nreturn msg;",
+        "timeout": "1800",
+        "userprop": "kitt._user_id",
+        "sessionprop": "kitt._session_id"
+    },
+    {
+        "id": "215b89b7.e84a66",
+        "type": "chat-in",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 113.390625,
+        "y": 35,
+        "wires": [
+            [
+                "fbd3f295.11f1a"
+            ]
+        ],
+        "server": "30288f8.6e97a7",
+        "sessionField": "kitt._session_id"
+    },
+    {
+        "id": "c10694c3.df20a8",
+        "type": "chat-out",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 663.390625,
+        "y": 38,
+        "wires": [],
+        "server": "30288f8.6e97a7"
+    },
+    {
+        "id": "fd7c243a.451678",
+        "type": "enter",
+        "name": "u: Positive",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 671.8906898498535,
+        "y": 239.00001525878906,
+        "wires": [
+            [
+                "717ce77.d3a9418"
+            ]
+        ],
         "outputs": 1,
-        "noerr": 0
-    },
-    {
-        "id": "c72b5e54.4edef",
-        "type": "debug",
-        "name": "",
-        "z": "a0439550.39c748",
-        "in": [],
-        "out": [],
-        "active": false,
-        "console": "false",
-        "complete": "false",
-        "x": 630,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "eafbc9d0.46ef58",
-        "type": "catch",
-        "name": "",
-        "z": "a0439550.39c748",
-        "in": [],
-        "out": [],
-        "x": 110,
-        "y": 140,
-        "wires": [
-            [
-                "3fefe7de.576118"
-            ]
-        ],
-        "scope": [
-            "d8999b38.eea8a8"
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "gt",
+                "p": "sentiment.score",
+                "v": "0"
+            }
         ]
     },
     {
-        "id": "3fefe7de.576118",
-        "type": "function",
-        "name": "Error handler",
-        "z": "a0439550.39c748",
+        "id": "717ce77.d3a9418",
+        "type": "state",
+        "name": "state",
+        "z": "f2a2c7c7.9dff08",
         "in": [],
         "out": [],
-        "x": 270,
-        "y": 140,
+        "x": 852.8906898498535,
+        "y": 239.00001525878906,
+        "wires": [
+            []
+        ],
+        "func": "// update msg.kitt:\n\n// msg.kitt.??? = ???;\n\n// update msg.kitt._responses (a list):\n// members of msg.kitt._responses will be\n// randomly selected and concatenated to\n// msg.payload by the Routher.\n// msg.kitt._responses = [???];\n\n// if you need extra debug function,\n// node.log() outputs to the debug panel.\nmsg.payload = \"Your message has a good sentiment = \" + JSON.stringify(msg.sentiment, null, \"\\t\")\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{payload}}}"
+    },
+    {
+        "id": "9fdf0d8c.01103",
+        "type": "enter",
+        "name": "u: Negative",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 667.0000953674316,
+        "y": 293.0000190734863,
         "wires": [
             [
-                "6fe084b.616b17c"
+                "392d8df8.9bc352"
             ]
         ],
-        "func": "let __error = msg.error.message;\ntry { // Parse and reformat the error\n    __error = __error.split(\" - \");\n    __first = __error.shift().replace(/(?=[^\\s])Error/, \" Error\");\n    __error = JSON.parse(__error.join(\" - \"))[\"error\"];\n    __error = __first + \"\\n\" + __error;\n} catch(e) {\n    __error = msg.error.message;\n}\n\nmsg.kik.message.body = __error;\nmsg.payload = msg.kik.message.body;\nmsg.kik.message.type = \"text\";\nmsg.kik.type = \"text\";\nmsg.error = undefined;\nreturn msg;",
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "lt",
+                "p": "sentiment.score",
+                "v": "0"
+            }
+        ]
+    },
+    {
+        "id": "392d8df8.9bc352",
+        "type": "state",
+        "name": "state",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 853.0000648498535,
+        "y": 294.00001525878906,
+        "wires": [
+            []
+        ],
+        "func": "// update msg.kitt:\n\n// msg.kitt.??? = ???;\n\n// update msg.kitt._responses (a list):\n// members of msg.kitt._responses will be\n// randomly selected and concatenated to\n// msg.payload by the Routher.\n// msg.kitt._responses = [???];\n\n// if you need extra debug function,\n// node.log() outputs to the debug panel.\nmsg.payload = \"Your message has a bad sentiment = \" + JSON.stringify(msg.sentiment, null, \"\\t\")\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{payload}}}"
+    },
+    {
+        "id": "bddca651.354ea8",
+        "type": "http request",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 542.8907089233398,
+        "y": 475.0000581741333,
+        "wires": [
+            [
+                "14244cd.df427b3"
+            ]
+        ],
+        "url": "{{{url}}}",
+        "ret": "txt",
+        "method": "GET"
+    },
+    {
+        "id": "8471aae.b6a5158",
+        "type": "enter",
+        "name": "u: @ URLs",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 124,
+        "y": 474,
+        "wires": [
+            [
+                "5fbbde9.878552"
+            ]
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "regex",
+                "p": "payload",
+                "v": "^\\s*@\\s*[^\\s]+",
+                "case": true
+            }
+        ]
+    },
+    {
+        "id": "73f4a291.33710c",
+        "type": "state",
+        "name": "JavaScript",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 336.0001983642578,
+        "y": 360.0000915527344,
+        "wires": [
+            []
+        ],
+        "func": "//msg.sentiment = undefined;\n//msg.payload = \"msg = \" + JSON.stringify(msg, null, \"\\t\")\n\n\ntry {\n    msg.payload = eval(msg.payload);\n} catch(e) {\n    msg.payload = e.toString();\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "Response: {{{payload}}}"
+    },
+    {
+        "id": "57c80ff8.6ab93",
+        "type": "enter",
+        "name": "u: Sentience",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 132.00000381469727,
+        "y": 359.00000381469727,
+        "wires": [
+            [
+                "73f4a291.33710c"
+            ]
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "regex",
+                "p": "payload",
+                "v": "^(?!(images|msg))[^@].*",
+                "case": true
+            }
+        ]
+    },
+    {
+        "id": "def9ec83.3dfc5",
+        "type": "sentiment",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 478.0000648498535,
+        "y": 275.00001525878906,
+        "wires": [
+            [
+                "fd7c243a.451678",
+                "9fdf0d8c.01103",
+                "4cce7513.faf5ec"
+            ]
+        ]
+    },
+    {
+        "id": "5fbbde9.878552",
+        "type": "function",
+        "name": "Remove @",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 309.89066314697266,
+        "y": 475.00005054473877,
+        "wires": [
+            [
+                "bddca651.354ea8"
+            ]
+        ],
+        "func": "// if you need extra debug function,\n// node.log() outputs to the debug panel.\n// Lookup www.google.com\n//msg.payload = msg.payload.replace(/(@simewu\\s)?\\s*@\\s+/i, '')\nmsg.url = msg.payload.replace(/\\s*@\\s*/, \"\");\nreturn msg;",
         "outputs": 1,
         "noerr": 0
     },
     {
-        "id": "6fe084b.616b17c",
-        "type": "delay",
-        "name": "",
-        "z": "a0439550.39c748",
+        "id": "4cce7513.faf5ec",
+        "type": "enter",
+        "name": "u: Neutral",
+        "z": "f2a2c7c7.9dff08",
         "in": [],
         "out": [],
-        "x": 430,
-        "y": 140,
+        "x": 666.0000648498535,
+        "y": 343.00001525878906,
+        "wires": [
+            []
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "eq",
+                "p": "sentiment.score",
+                "v": "0"
+            }
+        ]
+    },
+    {
+        "id": "f77b60b6.e217c",
+        "type": "state",
+        "name": "Website Stats",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 777.0001907348633,
+        "y": 605.9999370574951,
         "wires": [
             [
-                "b53773c2.9bf7b",
-                "c72b5e54.4edef"
+                "5bf84c3.b451bb4"
+            ]
+        ],
+        "func": "msg.headers = [];\nmsg.output = \"Response from \" + msg.url + \"\\n\\nmsg = \" + JSON.stringify(msg, null, \"\\t\");\nmsg.output = msg.payload.substring(0, 10000);\nmsg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{output}}}"
+    },
+    {
+        "id": "14244cd.df427b3",
+        "type": "state",
+        "name": "Just Payload",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 779.0000686645508,
+        "y": 475.0000114440918,
+        "wires": [
+            [
+                "5bf84c3.b451bb4"
+            ]
+        ],
+        "func": "msg.headers = [];\nmsg.output = msg.payload.substring(0, 10000);\nmsg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": ""
+    },
+    {
+        "id": "e02da2e2.6dc87",
+        "type": "chat-out",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1492,
+        "y": 515,
+        "wires": [],
+        "server": "30288f8.6e97a7"
+    },
+    {
+        "id": "97356d17.0c9cb",
+        "type": "enter",
+        "name": "Initialization",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 118.890625,
+        "y": 164,
+        "wires": [
+            [
+                "458a9661.86a828"
+            ]
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "eq",
+                "p": "payload",
+                "v": ""
+            }
+        ]
+    },
+    {
+        "id": "458a9661.86a828",
+        "type": "state",
+        "name": "state",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 657,
+        "y": 157,
+        "wires": [
+            []
+        ],
+        "func": "msg.payload = \"Hi there, I am Simewu. Here are my functionalities:\\n\\n\\\n@simewu @ [URL]\\nGiven a website link after a \\\"@\\\", I will return the raw data from that website.\\n\\n\\\n@simewu images @ [URL]\\nI will list all the images from a website.\\n\\n\\\n@simewu [SENTENCE]\\nGiven a sentence, I will analyze it to determine if it is positively or negatively toned.\\n\\n\\\n@simewu [OTHER]\\nGiven a neutral sentence, I will send back this message in the form it is stored inside Kik.\"\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{payload}}}"
+    },
+    {
+        "id": "5bf84c3.b451bb4",
+        "type": "state",
+        "name": "Full Payload Printer",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1097.890625,
+        "y": 442,
+        "wires": [
+            [
+                "2f0cc66.ede2e3a",
+                "8d8f91e3.bbd44",
+                "e02da2e2.6dc87"
+            ]
+        ],
+        "func": "// First 2000 characters\nmsg.payload = msg.output.substring(0, 2000);\n// Leftover characters\nmsg.output = msg.output.substring(2000);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": ""
+    },
+    {
+        "id": "1eb34c33.225ce4",
+        "type": "state",
+        "name": "Full Payload Printer",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1200,
+        "y": 384,
+        "wires": [
+            [
+                "2f0cc66.ede2e3a",
+                "826814c.d69d2e8",
+                "e02da2e2.6dc87"
+            ]
+        ],
+        "func": "// First 2000 characters\nmsg.payload = msg.output.substring(0, 2000);\n// Leftover characters\nmsg.output = msg.output.substring(2000);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{_output}}}"
+    },
+    {
+        "id": "e5655ab4.65c8e8",
+        "type": "state",
+        "name": "Full Payload Printer",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1235,
+        "y": 326,
+        "wires": [
+            [
+                "2f0cc66.ede2e3a",
+                "703a4deb.b604d4",
+                "e02da2e2.6dc87"
+            ]
+        ],
+        "func": "// First 2000 characters\nmsg.payload = msg.output.substring(0, 2000);\n// Leftover characters\nmsg.output = msg.output.substring(2000);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{_output}}}"
+    },
+    {
+        "id": "ea028a23.bfc058",
+        "type": "state",
+        "name": "Full Payload Printer",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1298,
+        "y": 264,
+        "wires": [
+            [
+                "2f0cc66.ede2e3a",
+                "8a03abe4.b4b2f8",
+                "e02da2e2.6dc87"
+            ]
+        ],
+        "func": "// First 2000 characters\nmsg.payload = msg.output.substring(0, 2000);\n// Leftover characters\nmsg.output = msg.output.substring(2000);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{_output}}}"
+    },
+    {
+        "id": "2f0cc66.ede2e3a",
+        "type": "kikbot-reply",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1496,
+        "y": 446,
+        "wires": [],
+        "kikbot": "52a302a2.22858c"
+    },
+    {
+        "id": "204627b3.2c4928",
+        "type": "state",
+        "name": "Full Payload Printer",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1377,
+        "y": 205,
+        "wires": [
+            [
+                "2f0cc66.ede2e3a",
+                "e02da2e2.6dc87"
+            ]
+        ],
+        "func": "// First 2000 characters\nmsg.payload = msg.output.substring(0, 2000);\n// Leftover characters\nmsg.output = undefined;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": "{{{_output}}}"
+    },
+    {
+        "id": "8d8f91e3.bbd44",
+        "type": "delay",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1007.890625,
+        "y": 384,
+        "wires": [
+            [
+                "1eb34c33.225ce4"
             ]
         ],
         "drop": false,
@@ -138,8 +575,263 @@
         "randomFirst": "1",
         "rateUnits": "second",
         "rate": "1",
-        "timeoutUnits": "milliseconds",
-        "timeout": "300",
+        "timeoutUnits": "seconds",
+        "timeout": "2",
         "pauseType": "delay"
+    },
+    {
+        "id": "826814c.d69d2e8",
+        "type": "delay",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1045,
+        "y": 326,
+        "wires": [
+            [
+                "e5655ab4.65c8e8"
+            ]
+        ],
+        "drop": false,
+        "randomUnits": "seconds",
+        "randomLast": "5",
+        "randomFirst": "1",
+        "rateUnits": "second",
+        "rate": "1",
+        "timeoutUnits": "seconds",
+        "timeout": "2",
+        "pauseType": "delay"
+    },
+    {
+        "id": "703a4deb.b604d4",
+        "type": "delay",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1106,
+        "y": 265,
+        "wires": [
+            [
+                "ea028a23.bfc058"
+            ]
+        ],
+        "drop": false,
+        "randomUnits": "seconds",
+        "randomLast": "5",
+        "randomFirst": "1",
+        "rateUnits": "second",
+        "rate": "1",
+        "timeoutUnits": "seconds",
+        "timeout": "2",
+        "pauseType": "delay"
+    },
+    {
+        "id": "8a03abe4.b4b2f8",
+        "type": "delay",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1182,
+        "y": 204,
+        "wires": [
+            [
+                "204627b3.2c4928"
+            ]
+        ],
+        "drop": false,
+        "randomUnits": "seconds",
+        "randomLast": "5",
+        "randomFirst": "1",
+        "rateUnits": "second",
+        "rate": "1",
+        "timeoutUnits": "seconds",
+        "timeout": "2",
+        "pauseType": "delay"
+    },
+    {
+        "id": "e7ebed59.1c3d8",
+        "type": "enter",
+        "name": "u: @ Images",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 123.11109924316406,
+        "y": 540.6805438995361,
+        "wires": [
+            [
+                "3f540343.e22d3c"
+            ]
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "regex",
+                "p": "payload",
+                "v": "^\\s*images\\s*@\\s*[^\\s]+",
+                "case": true
+            }
+        ]
+    },
+    {
+        "id": "3f540343.e22d3c",
+        "type": "function",
+        "name": "Remove @",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 306.1111145019531,
+        "y": 540.6805419921875,
+        "wires": [
+            [
+                "808a84b0.e98368"
+            ]
+        ],
+        "func": "//msg.payload = msg.payload.replace(/(@simewu\\s)?\\s*@\\s+/i, '')\nmsg.url = msg.payload.replace(/\\s*images\\s*@\\s*/, \"\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0
+    },
+    {
+        "id": "808a84b0.e98368",
+        "type": "http request",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 544.1110572814941,
+        "y": 541.6805286407471,
+        "wires": [
+            [
+                "45ffc1f4.fc33d"
+            ]
+        ],
+        "url": "{{{url}}}",
+        "ret": "txt",
+        "method": "GET"
+    },
+    {
+        "id": "45ffc1f4.fc33d",
+        "type": "state",
+        "name": "Filter images",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 774.1110687255859,
+        "y": 539.6805572509766,
+        "wires": [
+            [
+                "5bf84c3.b451bb4"
+            ]
+        ],
+        "func": "msg.headers = [];\nmatches = msg.payload.match(/[A-z0-9:/\\-\\.]+(\\.jpg|\\.png|\\.gif|\\.tif)/gi);\n//for(i in matches)\n//    if(matches[i][0] == \"/\" || matches[i].includes())\n//        matches[i] = msg.url + matches[i];\nmsg.output = matches.join(\"\\n\");\nmsg.payload = \"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": ""
+    },
+    {
+        "id": "4c5a7b13.125f74",
+        "type": "state",
+        "name": "state",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1220.059009552002,
+        "y": 530.4895439147949,
+        "wires": [
+            []
+        ],
+        "func": "msg.payload = \"The response is too large, I'm sorry.\";\nmsg.output = \"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": false,
+        "response": ""
+    },
+    {
+        "id": "8026bad0.803948",
+        "type": "state",
+        "name": "Save",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 1219.111198425293,
+        "y": 608.0138339996338,
+        "wires": [
+            []
+        ],
+        "func": "msg.payload = \"The response is too large, I'm sorry.\";\nmsg.output = \"\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "requestUserInput": false,
+        "finalstate": true,
+        "response": ""
+    },
+    {
+        "id": "61d44386.7f830c",
+        "type": "enter",
+        "name": "u: @ Msg",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 121.0000114440918,
+        "y": 605.0138626098633,
+        "wires": [
+            [
+                "4d56b759.fb2718"
+            ]
+        ],
+        "outputs": 1,
+        "initialstate": false,
+        "directlink": false,
+        "rules": [
+            {
+                "t": "regex",
+                "p": "payload",
+                "v": "^\\s*msg\\s*@\\s*[^\\s]+",
+                "case": true
+            }
+        ]
+    },
+    {
+        "id": "4d56b759.fb2718",
+        "type": "function",
+        "name": "Remove @",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 304.00002670288086,
+        "y": 605.0138607025146,
+        "wires": [
+            [
+                "6e964284.baa9cc"
+            ]
+        ],
+        "func": "//msg.payload = msg.payload.replace(/(@simewu\\s)?\\s*@\\s+/i, '')\nmsg.url = msg.payload.replace(/\\s*msg\\s*@\\s*/, \"\");\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0
+    },
+    {
+        "id": "6e964284.baa9cc",
+        "type": "http request",
+        "name": "",
+        "z": "f2a2c7c7.9dff08",
+        "in": [],
+        "out": [],
+        "x": 541.9999694824219,
+        "y": 606.0138473510742,
+        "wires": [
+            [
+                "f77b60b6.e217c"
+            ]
+        ],
+        "url": "{{{url}}}",
+        "ret": "txt",
+        "method": "GET"
     }
 ]
