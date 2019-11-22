@@ -13,4 +13,33 @@ As one of the most popular messaging apps in the world, Kik powers a wide variet
 - Enter JavaScript code to get the result.
 - Send stickers, gifs, videos, images, etc... and the bot will return the link to where this media is stored on the internet.
 
+```
+Hello! I am the coding bot.
+Send me some JavaScript code,
+and I'll respond with the output.
+Visit our support group #bot.js
+
+
+Examples:
+
+@bot.js 2+2 // Outputs 4
+
+
+@bot.js "Hello".repeat(3)
+// Outputs HelloHelloHello
+
+
+@bot.js for(i=0; i<7; i++) {
+    console.log(i);
+} // Outputs 0 1 2 3 4 5 6
+
+
+@bot.js GCD = (a, b) =>
+!b ? a : GCD(b, a%b);
+GCD(18, 24); // Outputs 6
+```
+
 The json files are made to operate within ChatFlow ([here](https://nlu.kitt.ai/)), all Kik messages are relayed to this service, sanitized and processed within ChatFlow via Node.js, and the result is returned. Special precautions are taken to ensure no code can escape the sandboxed environment, access to Kik messaging functionality, and other exploitable features have been removed prior to processing.
+
+- [Privacy Policy](https://pastebin.com/DJBiP2vB)
+- [Terms of Service](https://pastebin.com/AenjpF6i)
